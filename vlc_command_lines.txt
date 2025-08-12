@@ -1,0 +1,36 @@
+//play just 1 video in playlist loop mode forever
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_empty"
+
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=in_enqueue&input=file:///Users/thomas.dan/Downloads/video1.mpg"
+
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_play&id=0"
+
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_loop"
+
+
+
+
+
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_empty"
+
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=in_enqueue&input=file:///Users/thomas.dan/Downloads/video2.mpg"
+
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_play&id=0"
+
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_loop"
+
+
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_empty"
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_loop"
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=in_enqueue&input=file:///Users/thomas.dan/Downloads/video1.mpg"
+curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_play&id=0"
+
+
+
+
+
+
+/Applications/VLC.app/Contents/MacOS/VLC --extraintf http --http-port 8090 --http-password 1234
+
+
+"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8080 --http-password 1234
