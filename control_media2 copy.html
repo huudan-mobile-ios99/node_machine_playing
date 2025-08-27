@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VLC Remote</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: url('https://images.unsplash.com/photo-1524985069026-dd778a71c7b4') no-repeat center center/cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    h1 {
+      color: white;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+      margin-bottom: 40px;
+    }
+
+    .btn-container {
+      display: flex;
+      gap: 50px; /* spacing for desktop */
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      padding: 22px 60px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button i {
+      font-size: 26px;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .resume-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .pause-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+      .btn-container {
+        flex-direction: column;
+        gap: 30px; /* less gap for mobile */
+      }
+
+      button {
+        width: 200px; /* optional: make buttons full width if you want */
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>VLC Remote Control</h1>
+  <div class="btn-container">
+    <button class="resume-btn" onclick="sendCommand('pl_forceresume')">
+      <i class="fas fa-play"></i> Resume
+    </button>
+    <button class="pause-btn" onclick="sendCommand('pl_forcepause')">
+      <i class="fas fa-pause"></i> Pause
+    </button>
+  </div>
+
+  <script>
+    async function sendCommand(command) {
+      try {
+        await fetch(`http://192.168.101.111:8080/requests/status.xml?command=${command}`, {
+          headers: {
+            'Authorization': 'Basic ' + btoa(':'+ '1234')
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

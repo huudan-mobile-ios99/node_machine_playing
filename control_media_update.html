@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VLC Remote</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <link rel="manifest" href="manifest.json">
+  <!-- For iOS Safari fullscreen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <!-- For Android Chrome fullscreen -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: url('https://images.unsplash.com/photo-1524985069026-dd778a71c7b4') no-repeat center center/cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1 {
+      color: white;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+      margin-bottom: 40px;
+    }
+
+    .btn-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    button {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      padding: 22px 60px;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button i {
+      font-size: 26px;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .resume-btn {
+      background: #28a745;
+      color: white;
+    }
+
+    .pause-btn {
+      background: #dc3545;
+      color: white;
+    }
+
+    .video-btn {
+      background: #007bff;
+      color: white;
+    }
+
+    .error-message {
+      color: red;
+      margin-top: 20px;
+      font-size: 18px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>VLC Remote Control</h1>
+  <div class="btn-container">
+    <button class="video-btn" onclick="sendCommand('pl_play&id=1')">
+      <i class="fas fa-video"></i> Video 1
+    </button>
+    <button class="video-btn" onclick="sendCommand('pl_play&id=2')">
+      <i class="fas fa-video"></i> Video 2
+    </button>
+    <button class="video-btn" onclick="sendCommand('pl_play&id=3')">
+      <i class="fas fa-video"></i> Video 3
+    </button>
+    <button class="video-btn" onclick="sendCommand('pl_play&id=4')">
+      <i class="fas fa-video"></i> Video 4
+    </button>
+    <button class="resume-btn" onclick="sendCommand('pl_forceresume')">
+      <i class="fas fa-play"></i> Resume
+    </button>
+    <button class="pause-btn" onclick="sendCommand('pl_forcepause')">
+      <i class="fas fa-pause"></i> Pause
+    </button>
+  </div>
+  <div id="error-message" class="error-message"></div>
+
+  <script>
+    async function sendCommand(command) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.style.display = 'none'; // Clear previous messages
+      try {
+        const response = await fetch(`/vlc?command=${command}`, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`Server responded with status: ${response.status}`);
+        }
+        const text = await response.text();
+        console.log('VLC Response:', text); // Log for debugging
+        errorDiv.textContent = `Command ${command} sent successfully`;
+        errorDiv.style.color = 'green';
+        errorDiv.style.display = 'block';
+      } catch (err) {
+        console.error('Error sending command:', err);
+        errorDiv.textContent = `Error: ${err.message}`;
+        errorDiv.style.color = 'red';
+        errorDiv.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

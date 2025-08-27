@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VLC Remote Control</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 24px; }
+    h1 { margin: 0 0 12px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    button { padding: 8px 12px; border: 1px solid #ddd; border-radius: 10px; cursor: pointer; }
+    button:hover { filter: brightness(0.95); }
+    input[type="text"] { padding: 8px 10px; min-width: 360px; border-radius: 10px; border: 1px solid #ddd; }
+    .card { border: 1px solid #eee; border-radius: 14px; padding: 16px; margin: 16px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .muted { color: #666; font-size: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #f0f0f0; }
+    .idpill { font-size: 12px; padding: 2px 8px; border: 1px solid #eee; border-radius: 999px; }
+    #dropHint { margin-top:8px; color:#444; font-size:13px }
+  </style>
+</head>
+<body>
+  <h1>🎛️ VLC Remote Control</h1>
+
+  <div class="card">
+    <h3>Playback</h3>
+    <div class="row" style="margin-bottom:8px;">
+      <button id="btnPause">Pause</button>
+      <button id="btnResume">Resume</button>
+      <button id="btnStop">Stop</button>
+      <button id="btnRefresh">Refresh Playlist</button>
+    </div>
+    <div class="muted">Uses VLC web commands: <code>pl_forcepause</code>, <code>pl_forceresume</code>, <code>pl_stop</code>.</div>
+  </div>
+
+  <div class="card">
+    <h3>Add video from folder</h3>
+    <div class="row">
+      <input id="pathInput" type="text" placeholder="Example: C:\\Videos\\clip1.mp4 or file:///C:/Videos/clip1.mp4" />
+      <button id="btnAdd">Add to playlist</button>
+    </div>
+    <div id="dropHint" class="muted">Tip: You can paste a Windows path (e.g. <code>C:\\Movies\\file.mp4</code>). Also you can drag & drop files from Explorer onto this page (drop will be detected below playlist).</div>
+  </div>
+
+  <div class="card">
+    <h3>Playlist</h3>
+    <div id="playlistContainer" class="muted">Loading…</div>
+    <div id="dropZone" style="margin-top:12px; padding:10px; border:1px dashed #ddd; border-radius:8px; color:#666;">Drop files here to enqueue (from Windows Explorer)</div>
+  </div>
+
+<script>
+(function(){
+  // --- CONFIG ---
+  // If you use a different VLC password, change it here:
+  const VLC_PASSWORD = '1234';
+
+  const base = window.location.origin; // e.g. http://192.168.101.111:8080
+  const statusURL = `${base}/requests/status.json`;
+  const playlistURL = `${base}/requests/playlist.json`;
+
+  // Basic auth header: username is empty, password is VLC_PASSWORD
+  const AUTH = 'Basic ' + btoa(':' + VLC_PASSWORD);
+
+  async function vlcCmd(params){
+    // params is raw query string like: command=pl_forcepause
+    const url = `${statusURL}?${params}`;
+    let res;
+    try {
+      res = await fetch(url, { headers: { 'Authorization': AUTH } });
+    } catch(err){
+      throw new Error('Network error connecting to VLC. Are you opening this page from the VLC web server origin (http://<ip>:8080/...) and is VLC running?');
+    }
+    if(!res.ok) throw new Error(`VLC error ${res.status}`);
+    try { return await res.json(); } catch(e){ return {}; }
+  }
+
+  async function getPlaylist(){
+    let res;
+    try {
+      res = await fetch(playlistURL, { headers: { 'Authorization': AUTH } });
+    } catch(err){
+      throw new Error('Network error connecting to VLC (playlist).');
+    }
+    if(!res.ok) throw new Error(`VLC playlist error ${res.status}`);
+    return await res.json();
+  }
+
+  // Convert Windows path to file:/// URL if needed
+  function toFileURL(p){
+    if(!p) return '';
+    // If already looks like a URL (http, https, file), return as is
+    if (/^[a-z]+:\/\//i.test(p)) return p.trim();
+    // Windows path -> file:///C:/path/file.mp4
+    let s = p.trim().replace(/\\/g,'/');      // backslashes -> slashes
+    // Ensure drive letter form C:/...
+    if (/^[A-Za-z]:\//.test(s)) {
+      s = 'file:///' + s;
+    } else if (s.startsWith('/')) {
+      s = 'file://' + s;
+    }
+    return s;
+  }
+
+  // UI helpers
+  function el(tag, attrs={}, ...children){
+    const e = document.createElement(tag);
+    Object.entries(attrs).forEach(([k,v])=>{
+      if (k === 'class') e.className = v;
+      else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.substring(2), v);
+      else e.setAttribute(k,v);
+    });
+    children.forEach(c => e.append(c instanceof Node ? c : document.createTextNode(c)));
+    return e;
+  }
+
+  async function renderPlaylist(){
+    const container = document.getElementById('playlistContainer');
+    container.textContent = 'Loading…';
+    try {
+      const data = await getPlaylist();
+      // Flatten leaf nodes (actual media items)
+      const items = [];
+      function walk(node){
+        if (!node) return;
+        if (Array.isArray(node.children)) node.children.forEach(walk);
+        if (node.type === 'leaf') items.push(node);
+      }
+      walk(data);
+
+      if(items.length === 0){
+        container.innerHTML = '<div class="muted">No items in playlist.</div>';
+        return;
+      }
+
+      const table = el('table',{},
+        el('thead',{}, el('tr',{},
+          el('th',{},'Title'),
+          el('th',{},'URI'),
+          el('th',{},'ID'),
+          el('th',{},'Action')
+        )),
+        el('tbody',{},
+          ...items.map(item => {
+            const title = item.name || '(untitled)';
+            const uri = item.uri || '';
+            const id = item.id;
+            const rmBtn = el('button', { onclick: () => removeById(id) }, 'Remove');
+            return el('tr',{},
+              el('td',{}, title),
+              el('td',{}, uri),
+              el('td',{}, el('span',{class:'idpill'}, String(id))),
+              el('td',{}, rmBtn)
+            );
+          })
+        )
+      );
+      container.innerHTML = '';
+      container.append(table);
+    } catch (e){
+      container.innerHTML = `<div style="color:#b00020;">Failed to load playlist: ${e.message}</div>`;
+    }
+  }
+
+  async function addToPlaylist(){
+    const input = document.getElementById('pathInput');
+    const raw = input.value.trim();
+    if(!raw){ alert('Enter a file path or URL'); return; }
+    const fileUrl = toFileURL(raw);
+    // encode the file URL for query param
+    const encoded = encodeURIComponent(fileUrl);
+    try {
+      await vlcCmd(`command=in_enqueue&input=${encoded}`);
+      await renderPlaylist();
+      input.value = '';
+    } catch(e){
+      alert('Add failed: ' + e.message);
+    }
+  }
+
+  async function removeById(id){
+    try {
+      await vlcCmd(`command=pl_delete&id=${encodeURIComponent(id)}`);
+      await renderPlaylist();
+    } catch(e){
+      alert('Remove failed: ' + e.message);
+    }
+  }
+
+  async function pause(){ try { await vlcCmd(`command=pl_forcepause`); } catch(e){ alert(e.message); } }
+  async function resume(){ try { await vlcCmd(`command=pl_forceresume`); } catch(e){ alert(e.message); } }
+  async function stop(){ try { await vlcCmd(`command=pl_stop`); await renderPlaylist(); } catch(e){ alert(e.message); } }
+
+  // Wire buttons
+  document.getElementById('btnPause').addEventListener('click', pause);
+  document.getElementById('btnResume').addEventListener('click', resume);
+  document.getElementById('btnStop').addEventListener('click', stop);
+  document.getElementById('btnAdd').addEventListener('click', addToPlaylist);
+  document.getElementById('btnRefresh').addEventListener('click', renderPlaylist);
+
+  // Drag & drop (works when dragging from Windows Explorer)
+  const dropZone = document.getElementById('dropZone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#999'; dropZone.style.background = '#fafafa'; });
+  dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.style.borderColor = '#ddd'; dropZone.style.background = 'transparent'; });
+  dropZone.addEventListener('drop', async e => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#ddd'; dropZone.style.background = 'transparent';
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+    for (let file of files) {
+      // file.path is available in desktop browsers when dragging from Explorer in most modern Chrome/Edge
+      let filePath = file.path || file.name;
+      // Convert to file:/// style
+      if (!/^\w+:\/\//.test(filePath)) {
+        filePath = 'file:///' + filePath.replace(/\\/g, '/');
+      }
+      try {
+        await vlcCmd(`command=in_enqueue&input=${encodeURIComponent(filePath)}`);
+      } catch(err){
+        alert('Failed to add dropped file: ' + err.message);
+      }
+    }
+    await renderPlaylist();
+  });
+
+  // Initial load
+  renderPlaylist();
+})();
+</script>
+</body>
+</html>

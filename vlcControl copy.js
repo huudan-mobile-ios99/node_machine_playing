@@ -65,6 +65,7 @@ async function playNew(uri) {
     await vlc.playFromPlaylist(0);
     await vlc.setFullscreen(true);
     await vlc.setAspectRation('16:5');
+
     console.log(`Now playing new video: ${uri}`);
   } catch (err) {
     console.error('Error playing new video:', err);
@@ -84,51 +85,4 @@ async function stopVideo() {
   }
 }
 
-
-// --- NEW: Init settings list ---
-let initSettings = [
-  {
-    id: 1,
-    uri: "file:///Users/thomas.dan/Downloads/video1.mpg",
-    dateTime: new Date().toISOString()
-  },
-  {
-    id: 2,
-    uri: "file:///Users/thomas.dan/Downloads/video2.mpg",
-    dateTime: new Date().toISOString()
-  },
-    {
-    id: 3,
-    uri: "file:///Users/thomas.dan/Downloads/video3.mpg",
-    dateTime: new Date().toISOString()
-  },
-
-  {
-    id: 4,
-    uri: "file:///Users/thomas.dan/Downloads/video4.mpg",
-    dateTime: new Date().toISOString()
-  },
-  {
-    id: 5,
-    uri: "file:///Users/thomas.dan/Downloads/video5.mpg",
-    dateTime: new Date().toISOString()
-  },
-  {
-    id: 6,
-    uri: "file:///Users/thomas.dan/Downloads/video6.mpg",
-    dateTime: new Date().toISOString()
-  },
-
-
-];
-
-function getInitSettings() {
-  return initSettings;
-}
-
-function setInitSettings(list) {
-  initSettings = list;
-  return initSettings;
-}
-
-module.exports = { playLoop, pause, resume, playNew, stopVideo,getInitSettings,setInitSettings };
+module.exports = { playLoop, pause, resume, playNew, stopVideo };

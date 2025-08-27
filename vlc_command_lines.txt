@@ -19,18 +19,48 @@ curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_play&id=0"
 
 curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_loop"
 
+curl -u :1234 "http://localhost:8080/requests/status.xml"         =>CHECKING STATUS
+
+
 
 curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_empty"
 curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_loop"
 curl -u :1234 "http://localhost:8090/requests/status.xml?command=in_enqueue&input=file:///Users/thomas.dan/Downloads/video1.mpg"
+curl -u :1234 "http://localhost:8080/requests/status.xml?command=in_enqueue&input=file:///Users/thomas.dan/Downloads/video1.mpg"
+
 curl -u :1234 "http://localhost:8090/requests/status.xml?command=pl_play&id=0"
 
 
 
 
 
+curl -u :1234 "http://localhost:8080/requests/status.xml?command=in_enqueue&input=file:///Users/thomas.dan/Downloads/vid1.mp4"
+
+
 
 /Applications/VLC.app/Contents/MacOS/VLC --extraintf http --http-port 8090 --http-password 1234
+/Applications/VLC.app/Contents/MacOS/VLC --extraintf http --http-port 8080 --http-password 1234
 
 
-"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8080 --http-password 1234
+"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8080 --http-password 1234"
+
+
+//CURRENT
+"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8080 --http-password 1234 --fullscreen --no-video-title-show --aspect-ratio=16:5"
+"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8080 --no-video-title-show --no-video-deco --no-embedded-video --video-wallpaper --fullscreen --no-video-title-show --aspect-ratio=16:5"
+
+
+
+curl -u :1234 http://localhost:8090/requests/status.xml
+
+
+
+"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8080 --no-video-title-show --no-video-deco --no-embedded-video --video-wallpaper --fullscreen --no-video-title-show --aspect-ratio=16:5
+
+
+"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8090 --no-video-title-show --no-video-deco --no-embedded-video --video-wallpaper --fullscreen --no-video-title-show --aspect-ratio=16:5
+
+
+
+
+curl -u :1234 "http://localhost:8080/requests/status.xml?command=in_enqueue&input=file:///Users/User/Documents/VIDEO/vid1.mp4"
