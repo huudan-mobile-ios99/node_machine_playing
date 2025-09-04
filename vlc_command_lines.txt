@@ -60,7 +60,14 @@ curl -u :1234 http://localhost:8090/requests/status.xml
 
 "C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8090 --no-video-title-show --no-video-deco --no-embedded-video --video-wallpaper --fullscreen --no-video-title-show --aspect-ratio=16:5
 
+"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf=http --http-port=8080 --no-video-title-show --no-video-deco --no-embedded-video --video-wallpaper --fullscreen --aspect-ratio=16:5
 
 
 
 curl -u :1234 "http://localhost:8080/requests/status.xml?command=in_enqueue&input=file:///Users/User/Documents/VIDEO/vid1.mp4"
+
+
+
+
+
+"C:\Program Files\VideoLAN\VLC\vlc.exe" --extraintf http --http-port 8090 --no-video-title-show --no-video-deco --no-embedded-video --video-wallpaper --fullscreen --no-video-title-show --aspect-ratio=16:5

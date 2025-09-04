@@ -42,8 +42,6 @@ curl -u :1234 "http://localhost:8080/requests/status.xml?command=pl_delete&id=2"
 
 
 C:\Users\admin\Documents\be_node_machinefloor2
-
-
 in window path to video will change:
-        playLoop('C:\\Users\\media\\Documents\\VIDEO\\video1.mp4'); // ✅ fixed typo
-        playLoop('C:\\Users\\media\\Documents\\VIDEO\\video2.webm');
+playLoop('C:\\Users\\media\\Documents\\VIDEO\\video1.mp4'); // ✅ fixed typo
+playLoop('C:\\Users\\media\\Documents\\VIDEO\\video2.webm');
